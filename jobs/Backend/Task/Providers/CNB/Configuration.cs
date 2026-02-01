@@ -23,11 +23,13 @@ public static class CNBServiceCollectionExtensions
 
         services.AddMemoryCache();
 
+        services.AddScoped<ICNBExchangeRateApiClient, CNBExchangeRateApiClient>();
+
         services.AddKeyedScoped<IExchangeRateProvider, CNBCurrencyExchangeProvider>(Constants.CNBApiClientName);
 
-        services.AddHttpClient(Constants.CNBApiClientName, (sp, client) =>
+        services.AddHttpClient(Constants.CNBApiClientName, (serviceProvider, client) =>
         {
-            var options = sp
+            var options = serviceProvider
                 .GetRequiredService<IOptions<CNBExchangeRateProviderOptions>>()
                 .Value;
 
