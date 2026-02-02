@@ -2,5 +2,5 @@
 
 public static class Constants
 {
-    public const string CNBApiClientName = "CNBApiClient";
+    public const string CNBExchangeRateProviderName = "CNBExchangeRateProvider";
 }

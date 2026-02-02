@@ -31,7 +31,7 @@ namespace ExchangeRateUpdater
 
             try
             {
-                var provider = serviceProvider.GetRequiredKeyedService<IExchangeRateProvider>(Constants.CNBApiClientName);
+                var provider = serviceProvider.GetRequiredKeyedService<IExchangeRateProvider>(Constants.CNBExchangeRateProviderName);
 
                 var rates = await provider.GetExchangeRatesAsync(currencies);
 

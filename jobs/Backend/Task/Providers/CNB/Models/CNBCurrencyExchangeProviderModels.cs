@@ -12,6 +12,6 @@ internal sealed record CNBExchangeRateInformation
 
 internal sealed record CNBExchangeRateResponse
 {
-    public IEnumerable<CNBExchangeRateInformation> Rates { get; init; }
+    public IEnumerable<CNBExchangeRateInformation> Rates { get; init; } = [];
 }
 
