@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace ExchangeRateUpdater.Providers.CNB;
-internal class CNBCurrencyExchangeProvider : IExchangeRateProvider
+public class CNBCurrencyExchangeProvider : IExchangeRateProvider
 {
     private readonly ICNBExchangeRateApiClient _client;
     private readonly IMemoryCache _cache;

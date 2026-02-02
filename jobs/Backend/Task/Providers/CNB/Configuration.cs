@@ -25,37 +25,38 @@ public static class CNBServiceCollectionExtensions
 
         services.AddScoped<ICNBExchangeRateApiClient, CNBExchangeRateApiClient>();
 
-        services.AddKeyedScoped<IExchangeRateProvider, CNBCurrencyExchangeProvider>(Constants.CNBApiClientName);
+        services.AddKeyedScoped<IExchangeRateProvider, CNBCurrencyExchangeProvider>(Constants.CNBExchangeRateProviderName);
 
-        services.AddHttpClient(Constants.CNBApiClientName, (serviceProvider, client) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<CNBExchangeRateProviderOptions>>()
-                .Value;
+        services.AddHttpClient<ICNBExchangeRateApiClient, CNBExchangeRateApiClient>()
+            .ConfigureHttpClient((serviceProvider, client) =>
+            {
+                var options = serviceProvider
+                    .GetRequiredService<IOptions<CNBExchangeRateProviderOptions>>()
+                    .Value;
 
-            client.BaseAddress = new Uri(options.BaseUrl);
-        })
-        .AddStandardResilienceHandler(options =>
-        {
-            options.Retry.MaxRetryAttempts = 3;
-            options.Retry.Delay = TimeSpan.FromSeconds(2);
-            options.Retry.BackoffType = DelayBackoffType.Exponential;
-            options.Retry.UseJitter = true;
+                client.BaseAddress = new Uri(options.BaseUrl);
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromSeconds(2);
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
 
-            options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
-            options.CircuitBreaker.FailureRatio = 0.5;
-            options.CircuitBreaker.MinimumThroughput = 10;
-            options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 10;
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
 
-            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
-            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
-        });
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+            });
 
         return services;
     }
 }
 
-internal sealed record CNBExchangeRateProviderOptions
+public sealed record CNBExchangeRateProviderOptions
 {
     public required string Name { get; init; }
     public required string BaseUrl { get; init; }

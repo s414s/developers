@@ -1,4 +1,5 @@
-﻿using ExchangeRateUpdater.Exceptions;
+﻿using ExchangeRateUpdater.Contracts;
+using ExchangeRateUpdater.Exceptions;
 using ExchangeRateUpdater.Providers.CNB.Models;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,10 +12,6 @@ using System.Threading.Tasks;
 
 namespace ExchangeRateUpdater.Providers.CNB;
 
-internal interface ICNBExchangeRateApiClient
-{
-    Task<IEnumerable<ExchangeRate>> FetchExchangeRatesAsync(DateOnly date, CancellationToken ct = default);
-}
 
 internal class CNBExchangeRateApiClient : ICNBExchangeRateApiClient
 {
@@ -23,9 +20,9 @@ internal class CNBExchangeRateApiClient : ICNBExchangeRateApiClient
     private readonly HttpClient _httpClient;
     private readonly ILogger<CNBExchangeRateApiClient> _logger;
 
-    public CNBExchangeRateApiClient(IHttpClientFactory httpClientFactory, ILogger<CNBExchangeRateApiClient> logger)
+    public CNBExchangeRateApiClient(HttpClient httpClient, ILogger<CNBExchangeRateApiClient> logger)
     {
-        _httpClient = httpClientFactory.CreateClient(Constants.CNBApiClientName);
+        _httpClient = httpClient;
         _logger = logger;
     }
 
@@ -39,13 +36,11 @@ internal class CNBExchangeRateApiClient : ICNBExchangeRateApiClient
 
             var responseContent = await response.Content.ReadAsStringAsync(ct);
 
-            var cnbExchangeRates = JsonSerializer.Deserialize<CNBExchangeRateResponse>(
-                responseContent,
-                _jsonSerializerOptions)
+            var cnbExchangeRates = JsonSerializer.Deserialize<CNBExchangeRateResponse>(responseContent, _jsonSerializerOptions)
                 ?? throw new ExchangeRateProviderException("Error getting exchange rates from source, bad expected data");
 
-            return cnbExchangeRates.Rates
-                .Select(x => new ExchangeRate(
+            return cnbExchangeRates.Rates.Select(x =>
+                new ExchangeRate(
                     sourceCurrency: new Currency(x.CurrencyCode),
                     targetCurrency: _destinationCurrency,
                     value: x.Rate));
